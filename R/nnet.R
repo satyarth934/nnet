@@ -72,6 +72,21 @@ nnet.formula <- function(formula, data, weights, ...,
     res
 }
 
+# x : the feature vectors to train the model
+# y : classification of the training dataset
+# weights : weights given to each sample of the training set.
+# In case a particular sample is more complex and holds more
+# training importance compared to other samples.
+# size : number of nodes in the hidden layer
+# Wts : the connection weights of the neural network architecture.
+# mask : used to denote if only a few of the given features
+# of the training set are to be used.
+# linout : whether to give linear output. logistic output is returned by default.
+# rang : range of values from which the random values are assigned to the weights. range is [-rang to rang]
+# decay : regularization parameter.
+# maxit : maximum number of iterations.
+# MaxNWts : maximum number of allowed connection weights. This is introduced
+# in order to constraint the time and computation needed to compute the result.
 nnet.default <-
 function(x, y, weights, size, Wts, mask=rep(TRUE, length(wts)),
 	 linout=FALSE, entropy=FALSE, softmax=FALSE, censored=FALSE, skip=FALSE,
@@ -94,11 +109,14 @@ function(x, y, weights, size, Wts, mask=rep(TRUE, length(wts)),
         entropy <- FALSE
         softmax <- TRUE
     }
-    net$n <- c(dim(x)[2L], size, dim(y)[2L])
-    net$nunits <- as.integer(1L + sum(net$n))
-    net$nconn <- rep(0, net$nunits+1L)
-    net$conn <- numeric(0L)
-    net <- norm.net(net)
+
+    # "net" is the object to be returned. it is a list that contains
+    # all the neural network specific results and parameters.
+    net$n <- c(dim(x)[2L], size, dim(y)[2L])		# [input nodes, hidden nodes, output nodes] : neural network architecture
+    net$nunits <- as.integer(1L + sum(net$n))		# 1 + number of nodes excluding the bias nodes.
+    net$nconn <- rep(0, net$nunits+1L)				# Total number of nodes including the bias nodes.
+    net$conn <- numeric(0L)							# Total number of connections
+    net <- norm.net(net)							# Some values are assigned to the above variables.
     if(skip) net <- add.net(net, seq(1L,net$n[1L]),
                             seq(1L+net$n[1L]+net$n[2L], net$nunits-1L))
     if((nwts <- length(net$conn))==0) stop("no weights to fit")
